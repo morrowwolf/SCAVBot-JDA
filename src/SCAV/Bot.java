@@ -169,7 +169,7 @@ public class Bot
 		public void onMessageReceived(MessageReceivedEvent event)
 		{
 			
-			while(!startUpComplete) {} //Hold everything until every part is set and ready to go
+			while(!startUpComplete) {try {Thread.sleep(2000);} catch (InterruptedException e) {e.printStackTrace();}} //Hold everything until every part is set and ready to go
 			
 			chc.addPastMessage(event.getChannel().getId(), event.getMessage());
 			
@@ -244,7 +244,7 @@ public class Bot
 		public void onMessageUpdate(MessageUpdateEvent event)
 		{	
 			
-			while(!startUpComplete) {} //Hold everything until every part is set and ready to go
+			while(!startUpComplete) {try {Thread.sleep(2000);} catch (InterruptedException e) {e.printStackTrace();}} //Hold everything until every part is set and ready to go
 			
 			Message oldMessage = chc.getPastMessage(event.getChannel().getId(), event.getMessageId());
 			
@@ -258,7 +258,7 @@ public class Bot
 		public void onMessageDelete(MessageDeleteEvent event)
 		{
 			
-			while(!startUpComplete) {} //Hold everything until every part is set and ready to go
+			while(!startUpComplete) {try {Thread.sleep(2000);} catch (InterruptedException e) {e.printStackTrace();}} //Hold everything until every part is set and ready to go
 			
 			Message oldMessage = chc.getPastMessage(event.getChannel().getId(), event.getMessageId());
 			
@@ -271,7 +271,7 @@ public class Bot
 		@Override
 		public void onGuildMemberJoin(GuildMemberJoinEvent event)
 		{
-			while(!startUpComplete) {} //Hold everything until every part is set and ready to go
+			while(!startUpComplete) {try {Thread.sleep(2000);} catch (InterruptedException e) {e.printStackTrace();}} //Hold everything until every part is set and ready to go
 			
 			messageHelper.sendMessage(serverLogsChannel, "**" + event.getMember() + "** has joined the server.");
 		}
@@ -279,7 +279,7 @@ public class Bot
 		@Override
 		public void onGuildMemberLeave(GuildMemberLeaveEvent event)
 		{
-			while(!startUpComplete) {} //Hold everything until every part is set and ready to go
+			while(!startUpComplete) {try {Thread.sleep(2000);} catch (InterruptedException e) {e.printStackTrace();}} //Hold everything until every part is set and ready to go
 			
 			messageHelper.sendMessage(serverLogsChannel, "**" + event.getMember() + "** has left the server.");
 		}
@@ -287,7 +287,7 @@ public class Bot
 		@Override
 		public void onTextChannelCreate(TextChannelCreateEvent event)
 		{
-			while(!startUpComplete) {} //Hold everything until every part is set and ready to go
+			while(!startUpComplete) {try {Thread.sleep(2000);} catch (InterruptedException e) {e.printStackTrace();}} //Hold everything until every part is set and ready to go
 			
 			chc.setIfAddingChannel(true);
 			chc.addNewChannel(event.getChannel().getId());
@@ -297,7 +297,7 @@ public class Bot
 		@Override
 		public void onTextChannelDelete(TextChannelDeleteEvent event)
 		{
-			while(!startUpComplete) {} //Hold everything until every part is set and ready to go
+			while(!startUpComplete) {try {Thread.sleep(2000);} catch (InterruptedException e) {e.printStackTrace();}} //Hold everything until every part is set and ready to go
 			
 			//FileHelper.exportDeletedChannelToFile(websiteDir + "logs\\deleted_channels\\" + FileHelper.removeBadChars(event.getChannel().getName()) + "_-_" + FileHelper.removeBadOffsetDateTimeChars(event.getChannel().getTimeCreated().toString()) + ".html", event);
 		}

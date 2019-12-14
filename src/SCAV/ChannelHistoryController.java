@@ -21,7 +21,7 @@ public class ChannelHistoryController
 	
 	public void addPastMessage(String channelID, Message message)
 	{
-		while(addingChannel) {} //Hold everything until the new channel is added
+		while(addingChannel) {try {Thread.sleep(2000);} catch (InterruptedException e) {e.printStackTrace();}} //Hold everything until the new channel is added
 		
 		getChannelMessages(channelID).addMessage(message);
 	}
@@ -33,7 +33,7 @@ public class ChannelHistoryController
 	
 	public void setPastMessage(Message message)
 	{
-		while(addingChannel) {} //Hold everything until the new channel is added
+		while(addingChannel) {try {Thread.sleep(2000);} catch (InterruptedException e) {e.printStackTrace();}} //Hold everything until the new channel is added
 		
 		getChannelMessages(message.getChannel().getId()).setMessage(message);
 	}
@@ -46,30 +46,21 @@ public class ChannelHistoryController
 	
 	public void removePastMessage(String channelID, String messageID)
 	{
-		while(addingChannel) {} //Hold everything until the new channel is added
+		while(addingChannel) {try {Thread.sleep(2000);} catch (InterruptedException e) {e.printStackTrace();}} //Hold everything until the new channel is added
 		
 		getChannelMessages(channelID).removeMessage(messageID);
 	}
 	
-	/*
-	public void removePastMessage(Message message)
-	{
-		while(addingChannel) {} //Hold everything until the new channel is added
-		
-		getChannelMessages(message.getChannel().getId()).removeMessage(message.getId());
-	}
-	*/
-	
 	public Message getPastMessage(String channelID, String messageID)
 	{
-		while(addingChannel) {} //Hold everything until the new channel is added
+		while(addingChannel) {try {Thread.sleep(2000);} catch (InterruptedException e) {e.printStackTrace();}} //Hold everything until the new channel is added
 			
 		return getChannelMessages(channelID).getMessageByID(messageID);
 	}
 	
 	public ChannelMessages getChannelMessages(String channelID)
 	{
-		while(addingChannel) {} //Hold everything until the new channel is added
+		while(addingChannel) {try {Thread.sleep(2000);} catch (InterruptedException e) {e.printStackTrace();}} //Hold everything until the new channel is added
 		
 		for(int i = 0; i < messageHistoryByChannel.size(); i++)
 		{
