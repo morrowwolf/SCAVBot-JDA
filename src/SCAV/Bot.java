@@ -37,7 +37,7 @@ public class Bot
 	
 	boolean startUpComplete = false;
 	
-	String websiteDir = "";
+	static String websiteDir = "";
 	
 	String adminRoleID = "";
 
@@ -52,7 +52,7 @@ public class Bot
 		{
 			BufferedWriter out = null;
 			
-			try 
+			try
 			{
 				out = new BufferedWriter(new FileWriter("config.txt"));
 				out.append("Bot token=");
@@ -129,6 +129,8 @@ public class Bot
 			}
 		}
 		
+		FileHelper.cleanFiles();
+		
 		chc = new ChannelHistoryController(messageChannels);
 		
 		System.out.println("CHC up and running.");
@@ -161,18 +163,28 @@ public class Bot
 			
 			JDA jda = event.getJDA();
 			
-			
-			
 			String msg = event.getMessage().getContentRaw();
 			
 			if(event.getMember().getRoles().contains(jda.getRoleById(adminRoleID)))
 			{
 				if(msg.toLowerCase().startsWith("!index"))
 				{
+					event.getChannel().sendMessage("INDEX NO IMPLEMENTED IDIOT").queue();
+				}
+				else if(msg.toLowerCase().startsWith("!restart"))
+				{
+					FileHelper.cleanFiles();			//not done, should be implemented with Go()
+				}
+				else if(msg.toLowerCase().startsWith("!shutdown"))
+				{
+					FileHelper.cleanFiles();
+					System.exit(0);
+				}
+				else if(msg.toLowerCase().startsWith("!find"))
+				{
 					
 				}
 			}
-			
 		}
 		
 		@Override

@@ -33,7 +33,7 @@ public class ChannelMessages
 			return;
 		}
 		
-		System.out.println(channel.getName() + " has " + (tempMessageHolder.size() + 1) + " message(s)!");
+		System.out.println("Out of a limit of 100, " + (tempMessageHolder.size() + 1) + " messages were logged from " + channel.getName() + "!");
 
 		if(!tempMessageHolder.isEmpty())
 		{
@@ -43,14 +43,7 @@ public class ChannelMessages
 				
 				messages.add(latestMessage);
 				
-				if(!latestMessage.getAttachments().isEmpty())
-				{
-					try 
-					{
-						FileWriter fw = new FileWriter(new File("\\config.txt"));
-					}
-					catch (IOException e) {e.printStackTrace();}
-				}
+				FileHelper.checkForAndRipImage(latestMessage);
 			}
 			catch(IndexOutOfBoundsException e)
 			{
@@ -59,13 +52,13 @@ public class ChannelMessages
 		}
 		else
 		{
-			tempMessageHolder = MessageHistory.getHistoryFromBeginning(channel).limit(60).complete().getRetrievedHistory();
+			tempMessageHolder = MessageHistory.getHistoryFromBeginning(channel).limit(60).complete().getRetrievedHistory();  //THIS ELSE IS FOR CASES WHERE ONLY 1 COMMENT IS IN A CHANNEL
 		}
-		
 		
 		for(int i = 0; i < tempMessageHolder.size(); i++)
 		{
 			messages.add(tempMessageHolder.get(i));
+			FileHelper.checkForAndRipImage(tempMessageHolder.get(i));
 		}
 	}
 	
@@ -77,6 +70,7 @@ public class ChannelMessages
 	public void addMessage(Message message)
 	{
 		messages.add(0, message);
+		FileHelper.checkForAndRipImage(message);
 	}
 	
 	public void setMessage(Message message)
@@ -87,6 +81,7 @@ public class ChannelMessages
 	public void removeMessage(String messageID)
 	{
 		messages.remove(getIndexOfMessageByID(messageID));
+		FileHelper.checkForAndRemoveImage(messageID);
 	}
 	
 	public String getChannelID()

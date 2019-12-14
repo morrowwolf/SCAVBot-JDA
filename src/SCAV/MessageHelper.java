@@ -1,5 +1,6 @@
 package SCAV;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import net.dv8tion.jda.api.entities.Message;
@@ -42,12 +43,26 @@ public class MessageHelper
 	
 	public void sendOnUpdateMessage(MessageChannel channel, Message oldMessage, Message newMessage)
 	{
-		
+		if(!oldMessage.getContentRaw().equals(""))
+		{
+			sendMessage(channel, "The following message, authored by **" + oldMessage.getAuthor() + "**, was edited from:\n```" + oldMessage.getContentRaw() + "```To```" + newMessage.getContentRaw() + "```");
+		}
 	}
 	
 	public void sendOnDeleteMessage(MessageChannel channel, Message oldMessage)
 	{
+		if(!oldMessage.getContentRaw().equals(""))
+		{
+			sendMessage(channel, "The following message, authored by **" + oldMessage.getAuthor() + "**, was deleted:\n```" + oldMessage.getContentRaw() + "```");
+		}
 		
+		File deletedFile = FileHelper.checkForAndGetFile(oldMessage.getId());
+		
+		if(deletedFile != null)
+		{
+			sendMessage(channel, "The following attachment, authored by **" + oldMessage.getAuthor() + "**, was deleted:");
+			channel.sendFile(deletedFile).queue();
+		}
 	}
 	
 }

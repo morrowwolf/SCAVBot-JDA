@@ -68,4 +68,59 @@ public class FileHelper
 	{
 		return str.replaceFirst(":", "").replaceFirst(":", "_").replaceFirst(":", "");
 	}
+	
+	public static void cleanFiles()
+	{
+		File file = new File(Bot.websiteDir + "logs\\temp_files\\");
+		
+		String[] filesToBeDeleted = file.list();
+		
+		for(int i = 0; i < filesToBeDeleted.length; i++)
+		{
+			File deleteFile = new File(file.getPath() + "\\" + filesToBeDeleted[i]);
+			deleteFile.delete();
+		}
+	}
+	
+	public static void checkForAndRipImage(Message message)
+	{
+		if(message.getAttachments().isEmpty())
+		{
+			return;
+		}
+		
+		File file = new File(Bot.websiteDir + "logs\\temp_files\\");
+		
+		file.mkdirs();
+		
+		String fileEnd = message.getAttachments().get(0).getFileName().substring(message.getAttachments().get(0).getFileName().lastIndexOf("."));
+		
+		file = new File(Bot.websiteDir + "logs\\temp_files\\" + message.getId() + fileEnd);
+		
+		message.getAttachments().get(0).downloadToFile(file);
+	}
+	
+	public static void checkForAndRemoveImage(String messageID)
+	{
+		File deleteFile = checkForAndGetFile(messageID);
+		if(deleteFile != null)
+			deleteFile.delete();
+	}
+	
+	public static File checkForAndGetFile(String messageID)
+	{
+		File file = new File(Bot.websiteDir + "logs\\temp_files\\");
+		
+		String[] fileNames = file.list();
+		
+		for(int i = 0; i < fileNames.length; i++)
+		{
+			if(fileNames[i].startsWith(messageID))
+			{
+				return new File(Bot.websiteDir + "logs\\temp_files\\" + fileNames[i]);
+			}
+		}
+		
+		return null;
+	}
 }
