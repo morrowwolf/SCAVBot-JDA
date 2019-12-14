@@ -15,8 +15,11 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildChannel;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.channel.text.TextChannelCreateEvent;
 import net.dv8tion.jda.api.events.channel.text.TextChannelDeleteEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
@@ -36,6 +39,7 @@ public class Bot
 	MessageHelper messageHelper = null;
 	
 	boolean startUpComplete = false;
+	boolean running = true;
 	
 	static String websiteDir = "";
 	
@@ -141,10 +145,21 @@ public class Bot
 		
 		startUpComplete = true;
 		
+		System.out.println("Start up complete!");
+		
 	}
 	
 	public boolean go()
 	{
+		while(running)
+		{
+			try 
+			{
+				Thread.sleep(2000);
+			} 
+			catch (InterruptedException e) {e.printStackTrace();}
+		}
+		
 		return true;
 	}
 
@@ -169,19 +184,57 @@ public class Bot
 			{
 				if(msg.toLowerCase().startsWith("!index"))
 				{
-					event.getChannel().sendMessage("INDEX NO IMPLEMENTED IDIOT").queue();
+					
 				}
 				else if(msg.toLowerCase().startsWith("!restart"))
 				{
-					FileHelper.cleanFiles();			//not done, should be implemented with Go()
+					System.out.println("Restarting...");
+					FileHelper.cleanFiles();
+					System.out.println("Files cleaned.");
+					jda.shutdown();
+					System.out.println("Shutdown complete");
+					running = false;
 				}
 				else if(msg.toLowerCase().startsWith("!shutdown"))
 				{
+					System.out.println("Shutting down...");
 					FileHelper.cleanFiles();
+					System.out.println("Files cleaned.");
+					jda.shutdown();
+					System.out.println("Shutdown complete.");
 					System.exit(0);
 				}
 				else if(msg.toLowerCase().startsWith("!find"))
 				{
+					String ID = msg.substring(msg.lastIndexOf(" ") + 1);
+					
+					if(ID.length() != 18)
+					{
+						messageHelper.sendMessage(event.getChannel(), "That is not a valid ID :angry:");
+						return;
+					}
+					
+					User user = jda.getUserById(ID);
+					if(user != null)
+					{
+						messageHelper.sendMessage(event.getChannel(), "That ID is for the following user: **" + user.toString() + "**");
+						return;
+					}
+					Role role = jda.getRoleById(ID);
+					if(role != null)
+					{
+						messageHelper.sendMessage(event.getChannel(), "That ID is for the following role: **" + role.toString() + "**");
+						return;
+					}
+					GuildChannel guildChannel = jda.getGuildChannelById(ID);
+					if(guildChannel != null)
+					{
+						messageHelper.sendMessage(event.getChannel(), "That ID is for the following channel: **" + guildChannel.toString() + "**");
+						return;
+					}
+					
+					messageHelper.sendMessage(event.getChannel(), "That ID could not be located as a user, role, or channel :frowning:");
+					return;
 					
 				}
 			}
