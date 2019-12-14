@@ -38,6 +38,8 @@ public class Bot
 	boolean startUpComplete = false;
 	
 	String websiteDir = "";
+	
+	String adminRoleID = "";
 
 	
 	Bot()
@@ -60,6 +62,8 @@ public class Bot
 				out.append("Server logs channel ID=");
 				out.newLine();
 				out.append("Server logs dir=");
+				out.newLine();
+				out.append("Admin role ID=");
 				out.flush();
 			} 
 			catch (IOException e) {e.printStackTrace();}
@@ -75,8 +79,10 @@ public class Bot
 			guildID = in.readLine().substring(9);
 			serverLogChannelID = in.readLine().substring(23);
 			websiteDir = in.readLine().substring(16);
+			adminRoleID = in.readLine().substring(14);
 			
-			if(botToken.equals("") || guildID.equals("") || serverLogChannelID.equals("") || websiteDir.equals(""))
+			
+			if(botToken.equals("") || guildID.equals("") || serverLogChannelID.equals("") || websiteDir.equals("") || adminRoleID.equals(""))
 			{
 				System.out.println("One or all of the configuration values is not set.  Ending program.");
 				System.exit(0);
@@ -159,7 +165,7 @@ public class Bot
 			
 			String msg = event.getMessage().getContentRaw();
 			
-			if(event.getMember().getRoles().contains(jda.getRoleById("653315834206355477")))
+			if(event.getMember().getRoles().contains(jda.getRoleById(adminRoleID)))
 			{
 				if(msg.toLowerCase().startsWith("!index"))
 				{
