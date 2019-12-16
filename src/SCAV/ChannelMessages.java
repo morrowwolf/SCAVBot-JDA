@@ -1,8 +1,5 @@
 package SCAV;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +30,7 @@ public class ChannelMessages
 			return;
 		}
 		
-		System.out.println("Out of a limit of 100, " + (tempMessageHolder.size() + 1) + " messages were logged from " + channel.getName() + "!");
+		System.out.println("Out of a limit of 101, " + (tempMessageHolder.size() + 1) + " messages were logged from " + channel.getName() + "!");
 
 		if(!tempMessageHolder.isEmpty())
 		{
@@ -43,7 +40,7 @@ public class ChannelMessages
 				
 				messages.add(latestMessage);
 				
-				FileHelper.checkForAndRipImage(latestMessage);
+				FileHelper.checkForAndRipFile(latestMessage);
 			}
 			catch(IndexOutOfBoundsException e)
 			{
@@ -58,7 +55,7 @@ public class ChannelMessages
 		for(int i = 0; i < tempMessageHolder.size(); i++)
 		{
 			messages.add(tempMessageHolder.get(i));
-			FileHelper.checkForAndRipImage(tempMessageHolder.get(i));
+			FileHelper.checkForAndRipFile(tempMessageHolder.get(i));
 		}
 	}
 	
@@ -70,7 +67,7 @@ public class ChannelMessages
 	public void addMessage(Message message)
 	{
 		messages.add(0, message);
-		FileHelper.checkForAndRipImage(message);
+		FileHelper.checkForAndRipFile(message);
 	}
 	
 	public void setMessage(Message message)
@@ -81,7 +78,7 @@ public class ChannelMessages
 	public void removeMessage(String messageID)
 	{
 		messages.remove(getIndexOfMessageByID(messageID));
-		FileHelper.checkForAndRemoveImage(messageID);
+		FileHelper.checkForAndRemoveFile(messageID);
 	}
 	
 	public String getChannelID()

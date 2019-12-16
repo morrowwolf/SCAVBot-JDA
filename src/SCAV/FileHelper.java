@@ -1,50 +1,79 @@
 package SCAV;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.events.channel.text.TextChannelDeleteEvent;
+import net.dv8tion.jda.api.entities.MessageChannel;
 
 public class FileHelper
 {
-	public static void exportIndexedChannelToFile(String exportLocation, TextChannelDeleteEvent event)
+	public static void exportIndexedChannelToFile(String exportLocation, MessageChannel channel)
 	{
 		ArrayList<List<Message>> tempMessageHolder = new ArrayList<List<Message>>();
-		tempMessageHolder.add(0, event.getChannel().getHistoryFromBeginning(100).complete().getRetrievedHistory());
+		tempMessageHolder.add(0, channel.getHistoryFromBeginning(100).complete().getRetrievedHistory());
 		
-		while(!tempMessageHolder.get(0).get(0).getId().equals(event.getChannel().getLatestMessageId()))
+		while(!tempMessageHolder.get(0).get(0).getId().equals(channel.getLatestMessageId()))
 		{
-			tempMessageHolder.add(0, event.getChannel().getHistoryAfter(tempMessageHolder.get(0).get(0), 100).complete().getRetrievedHistory());
+			tempMessageHolder.add(0, channel.getHistoryAfter(tempMessageHolder.get(0).get(0), 1).complete().getRetrievedHistory());
 		}
 		
-		File exportFile = new File(exportLocation);
-		exportFile.mkdirs();
+		File exportDirFile = new File(exportLocation + FileHelper.removeBadChars(channel.getName()) + "-_-" + FileHelper.removeBadOffsetDateTimeChars(channel.getTimeCreated().toString()));
 		
-		PrintWriter printWriter = null;
+		exportDirFile.mkdirs();
 		
-		try 
+		File exportFile = new File(exportDirFile.getPath() + "\\info.html");
+		
+		BufferedWriter bufferedWriter = null;
+		
+		try
 		{
-			printWriter = new PrintWriter(exportFile, "UTF-8");
-			printWriter.println("<h3><b>The final recorded state of \"" + event.getChannel().getName() + "\" that was created on the following date: " + event.getChannel().getTimeCreated().toString() + "</b></h3><br><br><br>");
-			for(int i = 0; i < tempMessageHolder.size(); i++)
+			bufferedWriter = new BufferedWriter(new FileWriter(exportFile));
+			bufferedWriter.append("<h3><b>The final recorded state of \"" + channel.getName() + "\" that was created on the following date: " + channel.getTimeCreated().toString() + "</b></h3><br><br><br>");
+			bufferedWriter.newLine();
+			bufferedWriter.flush();
+			for(int i = tempMessageHolder.size() - 1; i >= 0; i--)
 			{
-				for(int j = 0; j < tempMessageHolder.get(i).size(); j++)
+				for(int j = tempMessageHolder.get(i).size() - 1; j >= 0; j--)
 				{
 					Message tempMessage = tempMessageHolder.get(i).get(j);
-					String tempMessageContent = tempMessage.getContentRaw().replace("\n", "<br>");
-					printWriter.println("<b>" + tempMessage.getAuthor().getName() + "</b>" + tempMessage.getTimeCreated() + (tempMessage.isEdited() ? " (Edited)" : "") + "<br>" + tempMessageContent + "<br>");
+					String tempMessageContent = MessageHelper.formatMessageContents(tempMessage).replace("\n", "<br>");
+					bufferedWriter.append("<b>" + tempMessage.getAuthor().getName() + "</b>" + tempMessage.getTimeCreated() + (tempMessage.isEdited() ? " (Edited)" : "") + "<br>" + tempMessageContent);
+					bufferedWriter.newLine();
+					bufferedWriter.flush();
+					
+					if(checkForAndRipFile(tempMessage, exportDirFile) != null)
+					{
+						String fileEnd = tempMessage.getAttachments().get(0).getFileName().substring(tempMessage.getAttachments().get(0).getFileName().lastIndexOf("."));
+						
+						String[] pathSections = exportDirFile.getPath().split("\\\\");
+						
+						String filePointer = pathSections[pathSections.length - 3] + "\\" + pathSections[pathSections.length - 2] + "\\" + pathSections[pathSections.length - 1] + "\\" + tempMessage.getId() + fileEnd;
+						
+						bufferedWriter.append("<a href=\"" + filePointer + "\">" + tempMessage.getId() + "</a>");
+						bufferedWriter.newLine();
+						bufferedWriter.flush();
+					}
+					
+					bufferedWriter.append("<br><br>");
+					bufferedWriter.newLine();
+					bufferedWriter.flush();
 				}
 			}
 			
-			printWriter.println("<br><br><br><h3><b>END OF FILE</b></h3>");
+			bufferedWriter.append("<br><br><br><h3><b>END OF FILE</b></h3>");
+			bufferedWriter.newLine();
 		} 
-		catch (FileNotFoundException | UnsupportedEncodingException e) {e.printStackTrace();}
-		finally{if(printWriter != null){printWriter.close();}}
+		catch (IOException e) {e.printStackTrace();}
+		finally{if(bufferedWriter != null){try {bufferedWriter.close();} catch (IOException e) {e.printStackTrace();}}}
+		
+		String[] pathSections = exportDirFile.getPath().split("\\\\");
+		
+		MessageHelper.sendMessage(Bot.serverLogsChannel, channel + " was indexed.\n" + Bot.websiteAddress + "/" + pathSections[pathSections.length - 3] + "/" + pathSections[pathSections.length - 2] + "/" + pathSections[pathSections.length - 1] + "/info.html");
 		
 		
 		
@@ -82,11 +111,11 @@ public class FileHelper
 		}
 	}
 	
-	public static void checkForAndRipImage(Message message)
+	public static File checkForAndRipFile(Message message)
 	{
 		if(message.getAttachments().isEmpty())
 		{
-			return;
+			return null;
 		}
 		
 		File file = new File(Bot.websiteDir + "logs\\temp_files\\");
@@ -98,9 +127,27 @@ public class FileHelper
 		file = new File(Bot.websiteDir + "logs\\temp_files\\" + message.getId() + fileEnd);
 		
 		message.getAttachments().get(0).downloadToFile(file);
+		return file;
 	}
 	
-	public static void checkForAndRemoveImage(String messageID)
+	public static File checkForAndRipFile(Message message, File exportDirFile)
+	{
+		if(message.getAttachments().isEmpty())
+		{
+			return null;
+		}
+		
+		exportDirFile.mkdirs();
+		
+		String fileEnd = message.getAttachments().get(0).getFileName().substring(message.getAttachments().get(0).getFileName().lastIndexOf("."));
+		
+		File file = new File(exportDirFile.getPath() + "\\" + message.getId() + fileEnd);
+		
+		message.getAttachments().get(0).downloadToFile(file);
+		return file;
+	}
+	
+	public static void checkForAndRemoveFile(String messageID)
 	{
 		File deleteFile = checkForAndGetFile(messageID);
 		if(deleteFile != null)

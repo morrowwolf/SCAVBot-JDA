@@ -15,7 +15,6 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildChannel;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.Role;
@@ -34,7 +33,7 @@ public class Bot
 {
 	
 	Guild scavGuild = null;
-	MessageChannel serverLogsChannel = null;
+	static MessageChannel serverLogsChannel = null;
 	ChannelHistoryController chc = null;
 	MessageHelper messageHelper = null;
 	
@@ -42,6 +41,7 @@ public class Bot
 	boolean running = true;
 	
 	static String websiteDir = "";
+	static String websiteAddress = "";
 	
 	String adminRoleID = "";
 
@@ -65,7 +65,9 @@ public class Bot
 				out.newLine();
 				out.append("Server logs channel ID=");
 				out.newLine();
-				out.append("Server logs dir=");
+				out.append("Server dir=");
+				out.newLine();
+				out.append("Server address=");
 				out.newLine();
 				out.append("Admin role ID=");
 				out.flush();
@@ -82,7 +84,8 @@ public class Bot
 			botToken = in.readLine().substring(10);
 			guildID = in.readLine().substring(9);
 			serverLogChannelID = in.readLine().substring(23);
-			websiteDir = in.readLine().substring(16);
+			websiteDir = in.readLine().substring(11);
+			websiteAddress = in.readLine().substring(15);
 			adminRoleID = in.readLine().substring(14);
 			
 			
@@ -169,6 +172,9 @@ public class Bot
 		public void onMessageReceived(MessageReceivedEvent event)
 		{
 			
+			if(!event.isFromGuild())
+				return;
+			
 			while(!startUpComplete) {try {Thread.sleep(2000);} catch (InterruptedException e) {e.printStackTrace();}} //Hold everything until every part is set and ready to go
 			
 			chc.addPastMessage(event.getChannel().getId(), event.getMessage());
@@ -184,6 +190,35 @@ public class Bot
 			{
 				if(msg.toLowerCase().startsWith("!index"))
 				{
+					if(event.getChannel().getName().startsWith("ban-appeal"))
+					{
+						FileHelper.exportIndexedChannelToFile(websiteDir + "\\logs\\ban_appeals\\", event.getChannel());
+						((GuildChannel)event.getChannel()).delete().queue();
+					}
+					else if(event.getChannel().getName().startsWith("player-complaint"))
+					{
+						FileHelper.exportIndexedChannelToFile(websiteDir + "\\logs\\player_complaints\\", event.getChannel());
+						((GuildChannel)event.getChannel()).delete().queue();
+					}
+					else if(event.getChannel().getName().startsWith("admin-complaint"))
+					{
+						FileHelper.exportIndexedChannelToFile(websiteDir + "\\logs\\admin_complaints\\", event.getChannel());
+						((GuildChannel)event.getChannel()).delete().queue();
+					}
+					else if(event.getChannel().getName().startsWith("admin-app"))
+					{
+						FileHelper.exportIndexedChannelToFile(websiteDir + "\\logs\\admin_apps\\", event.getChannel());
+						((GuildChannel)event.getChannel()).delete().queue();
+					}
+					else if(event.getChannel().getName().startsWith("coder-app"))
+					{
+						FileHelper.exportIndexedChannelToFile(websiteDir + "\\logs\\coder_apps\\", event.getChannel());
+						((GuildChannel)event.getChannel()).delete().queue();
+					}
+					else
+					{
+						MessageHelper.sendMessage(event.getChannel(), "This channel cannot be indexed.");
+					}
 					
 				}
 				else if(msg.toLowerCase().startsWith("!restart"))
@@ -197,12 +232,15 @@ public class Bot
 				}
 				else if(msg.toLowerCase().startsWith("!shutdown"))
 				{
-					System.out.println("Shutting down...");
-					FileHelper.cleanFiles();
-					System.out.println("Files cleaned.");
-					jda.shutdown();
-					System.out.println("Shutdown complete.");
-					System.exit(0);
+					if(event.getAuthor().getId().equals(event.getGuild().getOwner().getId()))
+					{
+						System.out.println("Shutting down...");
+						FileHelper.cleanFiles();
+						System.out.println("Files cleaned.");
+						jda.shutdown();
+						System.out.println("Shutdown complete.");
+						System.exit(0);
+					}
 				}
 				else if(msg.toLowerCase().startsWith("!find"))
 				{
@@ -210,30 +248,30 @@ public class Bot
 					
 					if(ID.length() != 18)
 					{
-						messageHelper.sendMessage(event.getChannel(), "That is not a valid ID :angry:");
+						MessageHelper.sendMessage(event.getChannel(), "That is not a valid ID :angry:");
 						return;
 					}
 					
 					User user = jda.getUserById(ID);
 					if(user != null)
 					{
-						messageHelper.sendMessage(event.getChannel(), "That ID is for the following user: **" + user.toString() + "**");
+						MessageHelper.sendMessage(event.getChannel(), "That ID is for the following user: **" + user.toString() + "**");
 						return;
 					}
 					Role role = jda.getRoleById(ID);
 					if(role != null)
 					{
-						messageHelper.sendMessage(event.getChannel(), "That ID is for the following role: **" + role.toString() + "**");
+						MessageHelper.sendMessage(event.getChannel(), "That ID is for the following role: **" + role.toString() + "**");
 						return;
 					}
 					GuildChannel guildChannel = jda.getGuildChannelById(ID);
 					if(guildChannel != null)
 					{
-						messageHelper.sendMessage(event.getChannel(), "That ID is for the following channel: **" + guildChannel.toString() + "**");
+						MessageHelper.sendMessage(event.getChannel(), "That ID is for the following channel: **" + guildChannel.toString() + "**");
 						return;
 					}
 					
-					messageHelper.sendMessage(event.getChannel(), "That ID could not be located as a user, role, or channel :frowning:");
+					MessageHelper.sendMessage(event.getChannel(), "That ID could not be located as a user, role, or channel :frowning:");
 					return;
 					
 				}
@@ -243,6 +281,8 @@ public class Bot
 		@Override
 		public void onMessageUpdate(MessageUpdateEvent event)
 		{	
+			if(!event.isFromGuild())
+				return;
 			
 			while(!startUpComplete) {try {Thread.sleep(2000);} catch (InterruptedException e) {e.printStackTrace();}} //Hold everything until every part is set and ready to go
 			
@@ -257,6 +297,8 @@ public class Bot
 		@Override
 		public void onMessageDelete(MessageDeleteEvent event)
 		{
+			if(!event.isFromGuild())
+				return;
 			
 			while(!startUpComplete) {try {Thread.sleep(2000);} catch (InterruptedException e) {e.printStackTrace();}} //Hold everything until every part is set and ready to go
 			
@@ -273,7 +315,7 @@ public class Bot
 		{
 			while(!startUpComplete) {try {Thread.sleep(2000);} catch (InterruptedException e) {e.printStackTrace();}} //Hold everything until every part is set and ready to go
 			
-			messageHelper.sendMessage(serverLogsChannel, "**" + event.getMember() + "** has joined the server.");
+			MessageHelper.sendMessage(serverLogsChannel, "**" + event.getMember() + "** has joined the server.");
 		}
 		
 		@Override
@@ -281,7 +323,7 @@ public class Bot
 		{
 			while(!startUpComplete) {try {Thread.sleep(2000);} catch (InterruptedException e) {e.printStackTrace();}} //Hold everything until every part is set and ready to go
 			
-			messageHelper.sendMessage(serverLogsChannel, "**" + event.getMember() + "** has left the server.");
+			MessageHelper.sendMessage(serverLogsChannel, "**" + event.getMember() + "** has left the server.");
 		}
 		
 		@Override
