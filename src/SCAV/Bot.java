@@ -7,14 +7,17 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import javax.security.auth.login.LoginException;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildChannel;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.Role;
@@ -24,8 +27,8 @@ import net.dv8tion.jda.api.events.channel.text.TextChannelDeleteEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberLeaveEvent;
 import net.dv8tion.jda.api.events.message.MessageDeleteEvent;
-import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.MessageUpdateEvent;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 
@@ -43,7 +46,7 @@ public class Bot
 	static String websiteDir = "";
 	static String websiteAddress = "";
 	
-	String adminRoleID = "";
+	static String adminRoleID = "";
 
 	
 	Bot()
@@ -168,13 +171,10 @@ public class Bot
 
 	public class MessageListener extends ListenerAdapter
 	{
+		
 		@Override
-		public void onMessageReceived(MessageReceivedEvent event)
+		public void onGuildMessageReceived(GuildMessageReceivedEvent event)
 		{
-			
-			if(!event.isFromGuild())
-				return;
-			
 			while(!startUpComplete) {try {Thread.sleep(2000);} catch (InterruptedException e) {e.printStackTrace();}} //Hold everything until every part is set and ready to go
 			
 			chc.addPastMessage(event.getChannel().getId(), event.getMessage());
@@ -185,6 +185,7 @@ public class Bot
 			JDA jda = event.getJDA();
 			
 			String msg = event.getMessage().getContentRaw();
+			
 			
 			if(event.getMember().getRoles().contains(jda.getRoleById(adminRoleID)))
 			{
@@ -219,6 +220,7 @@ public class Bot
 					{
 						MessageHelper.sendMessage(event.getChannel(), "This channel cannot be indexed.");
 					}
+					return;
 					
 				}
 				else if(msg.toLowerCase().startsWith("!restart"))
@@ -275,6 +277,69 @@ public class Bot
 					return;
 					
 				}
+				else if(msg.toLowerCase().startsWith("!add"))
+				{
+					if(event.getGuild().getCategoriesByName("appeals/apps/complaints", true).get(0).getChannels().contains(event.getChannel()))
+					{
+
+						List<Member> mentionedMembers = event.getMessage().getMentionedMembers();
+						for(int i = 0; i < mentionedMembers.size(); i++)
+						{
+							event.getChannel().getManager().putPermissionOverride(mentionedMembers.get(i), EnumSet.of(Permission.MESSAGE_WRITE), null).queue();;
+						}
+						
+						List<Role> mentionedRoles = event.getMessage().getMentionedRoles();
+						for(int i = 0; i < mentionedRoles.size(); i++)
+						{
+							event.getChannel().getManager().putPermissionOverride(mentionedRoles.get(i), EnumSet.of(Permission.MESSAGE_WRITE), null).queue();;
+						}
+					}
+					else
+					{
+						MessageHelper.sendMessage(event.getChannel(), "This command can only be used in the \"appeals/apps/complaints\" category.");
+					}
+					return;
+				}
+				else if(msg.toLowerCase().startsWith("!remove"))
+				{
+					if(event.getGuild().getCategoriesByName("appeals/apps/complaints", true).get(0).getChannels().contains(event.getChannel()))
+					{
+						
+						
+						
+					}
+					else
+					{
+						MessageHelper.sendMessage(event.getChannel(), "This command can only be used in the \"appeals/apps/complaints\" category.");
+					}
+					return;
+				}
+			}
+			
+			if(msg.toLowerCase().startsWith("!ban appeal"))
+			{
+				ChannelHelper.createAppealAppComplaint(event, new String[]{"ban appeal", "CKEY", "Ban Length", "Ban Reason", "Explanation"}, false);
+				return;
+			}
+			else if(msg.toLowerCase().startsWith("!player complaint"))
+			{
+				ChannelHelper.createAppealAppComplaint(event, new String[]{"player complaint", "CKEY of bad person", "IC name of bad person", "Round Number/Time and timezone", "Explanation"}, false);
+				return;
+			}
+			else if(msg.toLowerCase().startsWith("!admin complaint"))
+			{
+				ChannelHelper.createAppealAppComplaint(event, new String[]{"admin complaint", "CKEY of admin", "Round Number/Time and timezone", "Explanation"}, false);
+				return;
+			}
+			else if(msg.toLowerCase().startsWith("!admin application"))
+			{
+				ChannelHelper.createAppealAppComplaint(event, new String[]{"admin application", "CKEY", "IC names", "Explanation"}, true);
+				return;
+			}
+			else if(msg.toLowerCase().startsWith("!coder application"))
+			{
+				ChannelHelper.createAppealAppComplaint(event, new String[]{"coder application", "CKEY", "Github Account", "Explanation"}, true);
+				return;
 			}
 		}
 		

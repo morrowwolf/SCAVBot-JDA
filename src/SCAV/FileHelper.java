@@ -9,6 +9,7 @@ import java.util.List;
 
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.TextChannel;
 
 public class FileHelper
 {
@@ -33,7 +34,9 @@ public class FileHelper
 		try
 		{
 			bufferedWriter = new BufferedWriter(new FileWriter(exportFile));
-			bufferedWriter.append("<h3><b>The final recorded state of \"" + channel.getName() + "\" that was created on the following date: " + channel.getTimeCreated().toString() + "</b></h3><br><br><br>");
+			bufferedWriter.append("<h3><b>The final recorded state of \"" + channel.getName() + "\" that was created on the following date: " + channel.getTimeCreated().toString() + "</b></h3><br>");
+			bufferedWriter.newLine();
+			bufferedWriter.append("The topic of the channel was: <br>\"" + ((TextChannel)channel).getTopic().replace("\n", "<br>") + "\"<br><br><br>");
 			bufferedWriter.newLine();
 			bufferedWriter.flush();
 			for(int i = tempMessageHolder.size() - 1; i >= 0; i--)

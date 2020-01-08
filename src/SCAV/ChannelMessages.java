@@ -30,7 +30,7 @@ public class ChannelMessages
 			return;
 		}
 		
-		System.out.println("Out of a limit of 101, " + (tempMessageHolder.size() + 1) + " messages were logged from " + channel.getName() + "!");
+		System.out.println("Out of a limit of 101, " + (tempMessageHolder.size() + 1) + " messages were logged from " + channel.getName() + " on startup!");
 
 		if(!tempMessageHolder.isEmpty())
 		{
